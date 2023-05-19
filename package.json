@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start:dev": "npx nodemon server.js",
-    "start:prod": "NODE_ENV=production npx nodemon server.js"
+    "start:prod": "NODE_ENV=production npx nodemon server.js",
+    "debug": "npx ndb node server.js"
   },
   "author": "Kathy Hoang",
   "license": "ISC",
@@ -13,7 +14,9 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "mongoose": "^5.13.17",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "slugify": "^1.6.6",
+    "validator": "^13.9.0"
   },
   "devDependencies": {
     "eslint": "^8.40.0",
@@ -24,6 +27,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.32.2",
+    "ndb": "^1.1.5",
     "prettier": "^2.8.8"
   }
 }
