@@ -46,6 +46,8 @@ exports.getTour = catchAsync(async (request, response, next) => {
 
 exports.createTour = catchAsync(async (request, response, next) => {
   const newTour = await Tour.create(request.body);
+  console.log(newTour);
+  console.log(request.body);
   response.status(201).json({
     status: 'success',
     data: {

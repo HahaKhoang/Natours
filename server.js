@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 process.on('uncaughtException', (error) => {
   console.log('💥💥💥 UNCAUGHT EXCEPTION! Shutting down...');
-  console.log(error.name, error.message);
+  console.log(error.name, error.message, error);
   process.exit(1);
 });
 
@@ -23,7 +23,7 @@ mongoose
     useFindAndModify: false,
   })
   .then(() => {
-    console.log('DB connection successful!');
+    console.log('🌟🌟🌟 DB connection successful! 🌟🌟🌟');
   });
 
 const port = 3000 || process.env.PORT;
