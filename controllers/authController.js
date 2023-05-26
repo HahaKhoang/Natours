@@ -1,18 +1,175 @@
+const { promisify } = require('util');
+const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
+const sendEmail = require('./../utils/email');
+
+const signToken = (id) =>
+  jwt.sign({ id: id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 
 exports.signup = catchAsync(async (request, response, next) => {
   const newUser = await User.create({
     name: request.body.name,
     email: request.body.email,
     password: request.body.password,
-    passwordConfirm: request.body.confirm,
+    passwordConfirm: request.body.passwordConfirm,
+    passwordChangedAt: request.body.passwordChangedAt,
+    role: request.body.role,
   });
+
+  const token = signToken(newUser.id);
 
   response.status(201).json({
     status: 'success',
+    token,
     data: {
       user: newUser,
     },
   });
 });
+
+exports.login = catchAsync(async (request, response, next) => {
+  const { email, password } = request.body;
+
+  // 1. Check if email and password exist
+  if (!email || !password) {
+    return next(
+      new AppError('Please provide email and password!', 400)
+    );
+  }
+  // 2. Check if user exists && password is correct
+  const user = await User.findOne({ email: email }).select(
+    '+password'
+  );
+
+  if (
+    !user ||
+    !(await user.correctPassword(password, user.password))
+  ) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+  // 3. If everything is okay, send token to client
+  const token = signToken(user._id);
+  response.status(200).json({
+    status: 'success',
+    token,
+  });
+});
+
+exports.protect = catchAsync(async (request, response, next) => {
+  let token;
+  // 1. Getting token and check if it's there
+  if (
+    request.headers.authorization &&
+    request.headers.authorization.startsWith('Bearer')
+  ) {
+    token = request.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(
+      new AppError(
+        'You are not logged in! Please log in to get access',
+        401
+      )
+    );
+  }
+  // 2. Verification of token
+  const decoded = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_SECRET
+  );
+  console.log(decoded);
+
+  // 3. Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token no longer exists.',
+        401
+      )
+    );
+  }
+
+  // 4. Check if user changed password after the token was issued
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        'User recently changed password! Please log in again.',
+        401
+      )
+    );
+  }
+
+  // 5. Grants access to protected route
+  request.user = currentUser;
+  next();
+});
+
+// eslint-disable-next-line arrow-body-style
+exports.restrictTo = (...roles) => {
+  return (request, response, next) => {
+    // roles is an array ['admin', 'lead-guide]
+    if (!roles.includes(request.user.role)) {
+      return next(
+        new AppError(
+          'You do not have permission to perform this action',
+          403
+        )
+      );
+    }
+    next();
+  };
+};
+
+exports.forgotPassword = catchAsync(
+  async (request, response, next) => {
+    // 1. Get user based on POSTed email
+    const user = await User.findOne({ email: request.body.email });
+    if (!user) {
+      return next(
+        new AppError('There is no user with that email address.', 404)
+      );
+    }
+
+    // 2. Generate the random reset token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    // 3. Send it to user's email
+    const resetURL = `${request.protocol}://${request.get(
+      'host'
+    )}/api/v1/users/resetPassword/${resetToken}`;
+
+    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Your password reset token (valid for 10 min)',
+        message,
+      });
+
+      response.status(200).json({
+        status: 'success',
+        message: 'Token sent to email!',
+      });
+    } catch (error) {
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return next(
+        new AppError(
+          'There was an error sending the email. Try again later!'
+        ),
+        500
+      );
+    }
+  }
+);
+
+exports.resetPassword = (request, response, next) => {};
