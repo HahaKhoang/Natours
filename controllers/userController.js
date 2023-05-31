@@ -52,6 +52,15 @@ exports.updateMe = catchAsync(async (request, response, next) => {
   });
 });
 
+exports.deleteMe = catchAsync(async (request, response, next) => {
+  await User.findByIdAndUpdate(request.user.id, { active: false });
+
+  response.status(204).json({
+    status: 'success',
+    data: null,
+  });
+});
+
 exports.getUser = (request, response) => {
   response.status(500).json({
     status: 'error',
