@@ -12,6 +12,7 @@ exports.aliasTopTours = (request, response, next) => {
 };
 
 exports.getAllTours = factory.getAll(Tour);
+
 exports.getTour = factory.getOne(Tour, {
   path: 'reviews',
 });
