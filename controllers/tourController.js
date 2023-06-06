@@ -101,3 +101,39 @@ exports.getMonthlyPlan = catchAsync(
     });
   }
 );
+
+// /tours-within/:distance/center/:latlng/unit/:unit
+// /tours-distance/233/center/-40,45/unit/mi
+exports.getToursWithin = catchAsync(
+  async (request, response, next) => {
+    const { distance, latlng, unit } = request.params;
+    const [lat, lng] = latlng.split(',');
+
+    const radius =
+      unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+    if (!lat || !lng) {
+      next(
+        new AppError(
+          'Please provide latitude and longitude in the format lat,lng.'
+        ),
+        400
+      );
+    }
+
+    const tours = await Tour.find({
+      startLocation: {
+        $geoWithin: { $centerSphere: [[lng, lat], radius] },
+      },
+    });
+
+    console.log(distance, lat, lng, unit);
+    response.status(200).json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        data: tours,
+      },
+    });
+  }
+);
