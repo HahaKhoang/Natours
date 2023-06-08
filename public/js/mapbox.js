@@ -3,7 +3,6 @@
 const locations = JSON.parse(
   document.getElementById('map').dataset.locations
 );
-
 console.log(locations);
 
 mapboxgl.accessToken =
@@ -12,21 +11,18 @@ const map = new mapboxgl.Map({
   container: 'map',
   style: 'mapbox://styles/hahahoang/clinbivpo01bn01p65gb1fw14',
   scrollZoom: false,
-  //   center: [-118.113491, 34.111745],
-  //   zoom: 4,
-  //   interactive: false,
 });
 
 const bounds = new mapboxgl.LngLatBounds();
 
 locations.forEach((location) => {
   // Create marker
-  const element = document.createElement('div');
-  element.className = 'marker';
+  const marker = document.createElement('div');
+  marker.className = 'marker';
 
   // Add marker
   new mapboxgl.Marker({
-    element: element,
+    element: marker,
     anchor: 'bottom',
   })
     .setLngLat(location.coordinates)

@@ -13,7 +13,7 @@ exports.getOverview = catchAsync(async (request, response, next) => {
   });
 });
 
-exports.getTour = catchAsync(async (request, response) => {
+exports.getTour = catchAsync(async (request, response, next) => {
   // 1. Get the data for the requested tour (including reviews and guides)
   const tour = await Tour.findOne({
     slug: request.params.slug,
@@ -30,3 +30,9 @@ exports.getTour = catchAsync(async (request, response) => {
     tour: tour,
   });
 });
+
+exports.getLoginForm = (request, response) => {
+  response.status(200).render('login', {
+    title: 'Log into your account',
+  });
+};
