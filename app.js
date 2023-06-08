@@ -23,7 +23,8 @@ app.set('views', path.join(__dirname, 'views'));
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
 // Set security HTTP headers
-app.use(helmet());
+// app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
