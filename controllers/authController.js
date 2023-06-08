@@ -82,6 +82,8 @@ exports.protect = catchAsync(async (request, response, next) => {
     request.headers.authorization.startsWith('Bearer')
   ) {
     token = request.headers.authorization.split(' ')[1];
+  } else if (request.cookies.jwt) {
+    token = request.cookies.jwt;
   }
 
   if (!token) {
@@ -97,7 +99,6 @@ exports.protect = catchAsync(async (request, response, next) => {
     token,
     process.env.JWT_SECRET
   );
-  console.log(decoded);
 
   // 3. Check if user still exists
   const currentUser = await User.findById(decoded.id);
@@ -122,6 +123,33 @@ exports.protect = catchAsync(async (request, response, next) => {
 
   // 5. Grants access to protected route
   request.user = currentUser;
+  next();
+});
+
+// Only for rendered pages, no errors!
+exports.isLoggedIn = catchAsync(async (request, response, next) => {
+  if (request.cookies.jwt) {
+    // 1. Verify token
+    const decoded = await promisify(jwt.verify)(
+      request.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+
+    // 2. Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+
+    // 3. Check if user changed password after the token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next(new AppError());
+    }
+
+    // 4. THERE IS A LOGGED IN USER
+    response.locals.user = currentUser;
+    return next();
+  }
   next();
 });
 
