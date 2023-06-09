@@ -138,31 +138,35 @@ exports.protect = catchAsync(async (request, response, next) => {
 });
 
 // Only for rendered pages, no errors!
-exports.isLoggedIn = catchAsync(async (request, response, next) => {
+exports.isLoggedIn = async (request, response, next) => {
   if (request.cookies.jwt) {
-    // 1. Verify token
-    const decoded = await promisify(jwt.verify)(
-      request.cookies.jwt,
-      process.env.JWT_SECRET
-    );
+    try {
+      // 1. Verify token
+      const decoded = await promisify(jwt.verify)(
+        request.cookies.jwt,
+        process.env.JWT_SECRET
+      );
 
-    // 2. Check if user still exists
-    const currentUser = await User.findById(decoded.id);
-    if (!currentUser) {
+      // 2. Check if user still exists
+      const currentUser = await User.findById(decoded.id);
+      if (!currentUser) {
+        return next();
+      }
+
+      // 3. Check if user changed password after the token was issued
+      if (currentUser.changedPasswordAfter(decoded.iat)) {
+        return next(new AppError());
+      }
+
+      // 4. THERE IS A LOGGED IN USER
+      response.locals.user = currentUser;
+      return next();
+    } catch (error) {
       return next();
     }
-
-    // 3. Check if user changed password after the token was issued
-    if (currentUser.changedPasswordAfter(decoded.iat)) {
-      return next(new AppError());
-    }
-
-    // 4. THERE IS A LOGGED IN USER
-    response.locals.user = currentUser;
-    return next();
   }
   next();
-});
+};
 
 // eslint-disable-next-line arrow-body-style
 exports.restrictTo = (...roles) => {
