@@ -12,15 +12,12 @@ export const login = async (email, password) => {
         password,
       },
     });
-
     if (response.data.status === 'success') {
       showAlert('success', 'Logged in successfully!');
       window.setTimeout(() => {
         location.assign('/');
       }, 1500);
     }
-
-    console.log(response);
   } catch (error) {
     showAlert('error', error.response.data.message);
   }
