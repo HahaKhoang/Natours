@@ -12080,7 +12080,7 @@ var logout = /*#__PURE__*/function () {
         case 3:
           response = _context2.sent;
           if (response.data.status === 'success') {
-            location.reload(true);
+            location.assign('/');
           }
           _context2.next = 10;
           break;
@@ -12238,7 +12238,7 @@ var _login = require("./login");
 
 // DOM ELEMENTS
 var mapBox = document.getElementById('map');
-var loginForm = document.querySelector('.form');
+var loginForm = document.querySelector('.form--login');
 var logOutBtn = document.querySelector('.nav__el--logout');
 
 // DELEGATION
