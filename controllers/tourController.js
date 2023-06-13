@@ -66,7 +66,6 @@ exports.resizeTourImages = catchAsync(
       })
     );
 
-    console.log(request.body);
     next();
   }
 );
