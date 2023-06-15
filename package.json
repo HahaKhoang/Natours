@@ -4,7 +4,8 @@
   "description": "learning node, express, and mongoDB",
   "main": "app.js",
   "scripts": {
-    "start:dev": "npx nodemon server.js",
+    "start": "npx node server.js",
+    "dev": "npx nodemon server.js",
     "start:prod": "NODE_ENV=production npx nodemon server.js",
     "debug": "npx ndb node server.js",
     "watch:js": "npx parcel watch ./public/js/index.js --out-dir ./public/js --out-file bundle.js",
@@ -51,5 +52,8 @@
     "ndb": "^1.1.5",
     "parcel-bundler": "^1.12.5",
     "prettier": "^2.8.8"
+  },
+  "engines": {
+    "node": ">=10.0.0"
   }
 }
