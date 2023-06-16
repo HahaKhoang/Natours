@@ -82,7 +82,7 @@ exports.webhookCheckout = async (request, response, next) => {
   const signature = request.headers['stripe-signature'];
   let event;
   try {
-    const reqBuffer = await buffer(request);
+    const reqBuffer = await buffer(request.body);
     event = stripe.webhooks.constructEvent(
       reqBuffer,
       signature,
