@@ -5,6 +5,7 @@ const Booking = require('../models/bookingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+const { buffer } = require('micro');
 
 exports.getCheckoutSession = catchAsync(
   async (request, response, next) => {
@@ -77,12 +78,13 @@ const createBookingCheckout = async (session) => {
   await Booking.create({ tour, user, price });
 };
 
-exports.webhookCheckout = (request, response, next) => {
+exports.webhookCheckout = async (request, response, next) => {
   const signature = request.headers['stripe-signature'];
   let event;
   try {
+    const reqBuffer = await buffer(request);
     event = stripe.webhooks.constructEvent(
-      request.body,
+      reqBuffer,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
