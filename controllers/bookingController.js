@@ -97,6 +97,9 @@ exports.webhookCheckout = (request, response, next) => {
 
   response.status(200).json({
     received: true,
+    data: {
+      event,
+    },
   });
 };
 
