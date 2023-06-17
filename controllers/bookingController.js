@@ -22,7 +22,7 @@ exports.getCheckoutSession = catchAsync(
       // }&price=${tour.price}`,
       success_url: `${request.protocol}://${request.get(
         'host'
-      )}/my-tours`,
+      )}/my-tours?alert=booking`,
       cancel_url: `${request.protocol}://${request.get(
         'host'
       )}/tour/${tour.slug}`,
