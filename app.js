@@ -22,14 +22,14 @@ const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
-app.enable('trust proxy');
+// app.enable('trust proxy');
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
 // 1. GLOBAL MIDDLEWARES
 // Implement CORS
-// app.use(cors());
+app.use(cors());
 // app.use((req, res, next) => {
 //   res.setHeader(
 //     'Content-Security-Policy',
@@ -38,11 +38,6 @@ app.set('views', path.join(__dirname, 'views'));
 
 //   next();
 // });
-app.use(
-  cors({
-    origin: '*',
-  })
-);
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
